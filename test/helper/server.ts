@@ -192,6 +192,15 @@ export default class TestServer {
       })
     }
 
+    if (p === '/bom') {
+      res.statusCode = 200
+      res.setHeader('content-type', 'application/json; charset=utf-8')
+      const bom = Buffer.from([0xef, 0xbb, 0xbf])
+      const data = JSON.stringify({ text: 'hello' })
+      res.write(Buffer.concat([bom, Buffer.from(data)]))
+      res.end()
+    }
+
     if (p === '/error/400') {
       res.statusCode = 400
       res.setHeader('Content-Type', 'text/plain')

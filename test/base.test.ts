@@ -258,3 +258,8 @@ it('should handle split Chinese characters correctly', async () => {
   const res = await apexio.get('/chinese')
   expect(res.data).toEqual('中')
 })
+
+it('should strip BOM from response', async () => {
+  const res = await apexio.get('/bom')
+  expect(res.data).toEqual({ text: 'hello' })
+})

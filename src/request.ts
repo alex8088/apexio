@@ -2,7 +2,7 @@ import http from 'node:http'
 import https from 'node:https'
 import { promisify } from 'node:util'
 
-import { isObject, isStream, isFormData } from './utils'
+import { isObject, isStream, isFormData, stripBOM } from './utils'
 import { ApexioError } from './error'
 
 import type { ApexioRequestConfig, ApexioResponse } from './types'
@@ -113,6 +113,7 @@ export const request = async function <T>(
             response.statusCode < 300
           ) {
             let data = Buffer.concat(chunks).toString('utf-8')
+            data = stripBOM(data)
             if (
               response.statusCode === 200 &&
               (!options.responseType || options.responseType === 'json')

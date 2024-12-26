@@ -29,3 +29,10 @@ export type FormData = {
 export const isFormData = (val): val is FormData => {
   return isStream(val) && isFunction((val as FormData).getHeaders)
 }
+
+export function stripBOM(content: string): string {
+  if (content.charCodeAt(0) === 0xfeff) {
+    return content.slice(1)
+  }
+  return content
+}
