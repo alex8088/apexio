@@ -173,6 +173,25 @@ export default class TestServer {
       }, 500)
     }
 
+    if (p === '/chinese') {
+      res.setHeader('content-type', 'application/json; charset=utf-8')
+
+      // Send a single Chinese character by splitting its UTF-8 bytes into multiple sends.
+      // A Chinese character occupies 3 bytes in UTF-8.
+      const singleChar = '中'
+      const buf = Buffer.from(singleChar)
+
+      // Send one byte at a time
+      buf.forEach((byte, index) => {
+        setTimeout(() => {
+          res.write(Buffer.from([byte]))
+          if (index === buf.length - 1) {
+            res.end()
+          }
+        }, index * 1)
+      })
+    }
+
     if (p === '/error/400') {
       res.statusCode = 400
       res.setHeader('Content-Type', 'text/plain')

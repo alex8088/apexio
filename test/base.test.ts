@@ -253,3 +253,8 @@ it('should be timeout without response with timeout', async () => {
     })
   ).rejects.toThrowError(/^timeout/)
 })
+
+it('should handle split Chinese characters correctly', async () => {
+  const res = await apexio.get('/chinese')
+  expect(res.data).toEqual('中')
+})
