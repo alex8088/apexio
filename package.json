@@ -12,6 +12,16 @@
       "require": "./dist/index.cjs"
     }
   },
+  "author": "Alex Wei <https://github.com/alex8088>",
+  "license": "MIT",
+  "homepage": "https://github.com/alex8088/apexio#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alex8088/apexio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alex8088/apexio/issues"
+  },
   "files": [
     "dist"
   ],
