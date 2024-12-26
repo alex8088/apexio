@@ -102,9 +102,9 @@ export const request = async function <T>(
           _reject()
         }
       } else {
-        let body = ''
+        const chunks: Buffer[] = []
         response.on('data', (chunk) => {
-          body += (chunk as Buffer).toString('utf-8')
+          chunks.push(Buffer.from(chunk))
         })
         response.on('end', () => {
           if (
@@ -112,15 +112,13 @@ export const request = async function <T>(
             response.statusCode >= 200 &&
             response.statusCode < 300
           ) {
-            let data = body as T
+            let data = Buffer.concat(chunks).toString('utf-8')
             if (
               response.statusCode === 200 &&
-              body &&
-              typeof body === 'string' &&
               (!options.responseType || options.responseType === 'json')
             ) {
               try {
-                data = JSON.parse(body)
+                data = JSON.parse(data)
               } catch (e) {
                 if (options.responseType === 'json') {
                   reject(
@@ -136,7 +134,7 @@ export const request = async function <T>(
               }
             }
 
-            _resolve(data)
+            _resolve(data as T)
           } else {
             _reject()
           }
