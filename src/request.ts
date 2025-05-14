@@ -112,7 +112,9 @@ export const request = async function <T>(
             response.statusCode >= 200 &&
             response.statusCode < 300
           ) {
-            let data = Buffer.concat(chunks).toString('utf-8')
+            let data = Buffer.concat(
+              chunks as unknown as Uint8Array[]
+            ).toString('utf-8')
             data = stripBOM(data)
             if (
               response.statusCode === 200 &&
