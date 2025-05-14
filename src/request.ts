@@ -15,7 +15,7 @@ function buildURL(url: string, params?: any): string {
   const qs =
     params instanceof URLSearchParams ? params : new URLSearchParams(params)
 
-  return (url.indexOf('?') === -1 ? '?' : '&') + qs.toString()
+  return url + (url.indexOf('?') === -1 ? '?' : '&') + qs.toString()
 }
 
 export const request = async function <T>(
