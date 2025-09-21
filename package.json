@@ -1,6 +1,6 @@
 {
   "name": "apexio",
-  "version": "1.0.0-alpha.3",
+  "version": "1.0.0",
   "description": "Tiny HTTP client for Node.js.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
