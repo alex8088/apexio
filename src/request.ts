@@ -72,58 +72,60 @@ export const request = async function <T>(
   }
 
   return new Promise((resolve, reject) => {
-    const request = net.request(url, options, (response) => {
-      const _resolve = (data: T): void => {
-        resolve({
-          status: response.statusCode!,
-          statusText: response.statusMessage || 'OK',
-          headers: response.headers,
-          config,
-          data
-        })
-      }
-      const _reject = (): void => {
-        reject(
-          new ApexioError(
-            `Server responded with status code: ${response.statusCode}`,
-            (response.statusCode || 0) < 500
-              ? 'ERR_BAD_REQUEST'
-              : 'ERR_BAD_RESPONSE',
+    const request = net.request(
+      url,
+      options,
+      (response: http.IncomingMessage & { data?: unknown }) => {
+        const _resolve = (data: T): void => {
+          resolve({
+            status: response.statusCode!,
+            statusText: response.statusMessage || 'OK',
+            headers: response.headers,
             config,
-            request,
-            response
-          )
-        )
-      }
-      if (options.responseType === 'stream') {
-        if (response.statusCode === 200) {
-          _resolve(response as T)
-        } else {
-          _reject()
+            data
+          })
         }
-      } else {
-        const chunks: Buffer[] = []
-        response.on('data', (chunk) => {
-          chunks.push(Buffer.from(chunk))
-        })
-        response.on('end', () => {
-          if (
-            response.statusCode &&
-            response.statusCode >= 200 &&
-            response.statusCode < 300
-          ) {
+        const _reject = (): void => {
+          reject(
+            new ApexioError(
+              `Server responded with status code: ${response.statusCode}`,
+              (response.statusCode || 0) < 500
+                ? 'ERR_BAD_REQUEST'
+                : 'ERR_BAD_RESPONSE',
+              config,
+              request,
+              response
+            )
+          )
+        }
+        if (options.responseType === 'stream') {
+          if (response.statusCode === 200) {
+            _resolve(response as T)
+          } else {
+            _reject()
+          }
+        } else {
+          const chunks: Buffer[] = []
+          response.on('data', (chunk) => {
+            chunks.push(Buffer.from(chunk))
+          })
+          response.on('end', () => {
+            const success =
+              response.statusCode &&
+              response.statusCode >= 200 &&
+              response.statusCode < 300
+
             let data = Buffer.concat(
               chunks as unknown as Uint8Array[]
             ).toString('utf-8')
             data = stripBOM(data)
-            if (
-              response.statusCode === 200 &&
-              (!options.responseType || options.responseType === 'json')
-            ) {
+
+            if (!options.responseType || options.responseType === 'json') {
               try {
                 data = JSON.parse(data)
               } catch (e) {
-                if (options.responseType === 'json') {
+                if (options.responseType === 'json' && success) {
+                  response.data = data
                   reject(
                     ApexioError.from(
                       e as Error,
@@ -133,21 +135,24 @@ export const request = async function <T>(
                       response
                     )
                   )
+                  return
                 }
               }
             }
-
-            _resolve(data as T)
-          } else {
-            _reject()
-          }
-        })
-        response.on('error', (err) => {
-          if (request.destroyed) return
-          reject(ApexioError.from(err, 'ERR_ON_RESPONSE', config, request))
-        })
+            if (success) {
+              _resolve(data as T)
+            } else {
+              response.data = data
+              _reject()
+            }
+          })
+          response.on('error', (err) => {
+            if (request.destroyed) return
+            reject(ApexioError.from(err, 'ERR_ON_RESPONSE', config, request))
+          })
+        }
       }
-    })
+    )
 
     request.on('error', (err) => {
       reject(ApexioError.from(err, 'ERR_ON_REQUEST', config, request))

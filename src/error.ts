@@ -17,7 +17,7 @@ export class ApexioError extends Error {
     code: ErrorCode,
     readonly config?: ApexioRequestConfig,
     readonly request?: ClientRequest,
-    readonly response?: IncomingMessage
+    readonly response?: IncomingMessage & { data?: unknown }
   ) {
     super(message)
     this.name = 'ApexioError'
@@ -29,7 +29,7 @@ export class ApexioError extends Error {
     code: ErrorCode,
     config?: ApexioRequestConfig,
     request?: ClientRequest,
-    response?: IncomingMessage
+    response?: IncomingMessage & { data?: unknown }
   ): ApexioError {
     const _error = new ApexioError(
       error.message,
